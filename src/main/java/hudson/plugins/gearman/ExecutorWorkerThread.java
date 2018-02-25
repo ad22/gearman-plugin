@@ -126,7 +126,6 @@ public class ExecutorWorkerThread extends AbstractWorkerThread{
 
                 String projectName = project.getName();
                 Label label = project.getAssignedLabel();
-
                 if (label == null) { // project has no label -> so register
                                      // "build:projectName" on all non exclusive nodes
                     if (node.getMode() != Mode.EXCLUSIVE) {
@@ -140,7 +139,11 @@ public class ExecutorWorkerThread extends AbstractWorkerThread{
 
                     Set<Node> projectLabelNodes = label.getNodes();
                     Set<LabelAtom> projectLabelAtoms = label.listAtoms();
+                    LabelAtom scheduler = Jenkins.getActiveInstance().getLabelAtom("scheduler");
                     Set<LabelAtom> nodeLabelAtoms = node.getAssignedLabels();
+                    if (scheduler != null && !nodeLabelAtoms.contains(scheduler)) {
+                        continue;
+                    }
                     // Get the intersection of label atoms for the project and the current node
                     Set<LabelAtom> nodeProjectLabelAtoms = new HashSet<LabelAtom>(projectLabelAtoms);
                     nodeProjectLabelAtoms.retainAll(nodeLabelAtoms);
