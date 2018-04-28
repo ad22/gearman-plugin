@@ -23,6 +23,7 @@ import hudson.model.Node;
 import hudson.model.Run;
 import hudson.model.Queue;
 import hudson.model.queue.CauseOfBlockage;
+import hudson.model.labels.LabelAtom;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -139,6 +140,10 @@ public class GearmanProxy {
         List<Node> nodes = Jenkins.getActiveInstance().getNodes();
         if (!nodes.isEmpty()) {
             for (Node node : nodes) {
+                LabelAtom scheduler = new LabelAtom("scheduler");
+                if (!node.getAssignedLabels().contains(scheduler)) {
+                    continue;
+                }
                 Computer computer = node.toComputer();
                 if (computer != null) {
                     // create a gearman worker for every executor on the slave

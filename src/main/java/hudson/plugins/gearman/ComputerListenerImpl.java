@@ -22,6 +22,7 @@ import hudson.model.TaskListener;
 import hudson.model.Computer;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.OfflineCause;
+import hudson.model.labels.LabelAtom;
 
 import java.io.IOException;
 
@@ -69,6 +70,10 @@ public class ComputerListenerImpl extends ComputerListener {
             return;
         }
 
+        LabelAtom scheduler = new LabelAtom("scheduler");
+        if (!c.getNode().getAssignedLabels().contains(scheduler)) {
+            return;
+        }
         // stop worker when jenkins slave is deleted or disconnected
         GearmanProxy.getInstance().stop(c);
     }
@@ -87,6 +92,10 @@ public class ComputerListenerImpl extends ComputerListener {
             return;
         }
 
+        LabelAtom scheduler = new LabelAtom("scheduler");
+        if (!c.getNode().getAssignedLabels().contains(scheduler)) {
+            return;
+        }
         GearmanProxy gp = GearmanProxy.getInstance();
         /*
          * Spawn management executor worker if one doesn't exist yet.
@@ -108,7 +117,10 @@ public class ComputerListenerImpl extends ComputerListener {
         if (!GearmanPluginConfig.get().enablePlugin()) {
             return;
         }
-
+        LabelAtom scheduler = new LabelAtom("scheduler");
+        if (!c.getNode().getAssignedLabels().contains(scheduler)) {
+            return;
+        }
         // re-register gearman functions on node status change,
         GearmanProxy.getInstance().registerJobs();
     }
@@ -122,7 +134,10 @@ public class ComputerListenerImpl extends ComputerListener {
         if (!GearmanPluginConfig.get().enablePlugin()) {
             return;
         }
-
+        LabelAtom scheduler = new LabelAtom("scheduler");
+        if (!c.getNode().getAssignedLabels().contains(scheduler)) {
+            return;
+        }
         // re-register gearman functions on node status change,
         GearmanProxy.getInstance().registerJobs();
     }
