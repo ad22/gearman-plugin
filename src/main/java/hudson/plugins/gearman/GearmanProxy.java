@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import jenkins.model.Jenkins;
 
@@ -137,17 +138,16 @@ public class GearmanProxy {
         /*
          * Spawn executors for the jenkins slaves
          */
-        List<Node> nodes = Jenkins.getActiveInstance().getNodes();
-        if (!nodes.isEmpty()) {
-            for (Node node : nodes) {
-                LabelAtom scheduler = new LabelAtom("scheduler");
-                if (!node.getAssignedLabels().contains(scheduler)) {
-                    continue;
-                }
-                Computer computer = node.toComputer();
-                if (computer != null) {
-                    // create a gearman worker for every executor on the slave
-                    createExecutorWorkersOnNode(computer);
+        LabelAtom scheduler = Jenkins.getActiveInstance().getLabelAtom("scheduler");
+        if (scheduler != null) {
+            Set<Node> nodes = scheduler.getNodes();
+            if (!nodes.isEmpty()) {
+                for (Node node : nodes) {
+                    Computer computer = node.toComputer();
+                    if (computer != null) {
+                        // create a gearman worker for every executor on the slave
+                        createExecutorWorkersOnNode(computer);
+                    }
                 }
             }
         }

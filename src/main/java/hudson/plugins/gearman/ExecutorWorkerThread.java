@@ -112,11 +112,9 @@ public class ExecutorWorkerThread extends AbstractWorkerThread{
             return;
         }
 
-        HashMap<String,GearmanFunctionFactory> newFunctionMap = new HashMap<String,GearmanFunctionFactory>();
+        HashMap<String, GearmanFunctionFactory> newFunctionMap = new HashMap<String, GearmanFunctionFactory>();
 
         if (!computer.isOffline()) {
-            Node node = computer.getNode();
-
             List<AbstractProject> allProjects = Jenkins.getActiveInstance().getAllItems(AbstractProject.class);
             for (AbstractProject<?, ?> project : allProjects) {
 
@@ -125,48 +123,12 @@ public class ExecutorWorkerThread extends AbstractWorkerThread{
                 }
 
                 String projectName = project.getName();
-                Label label = project.getAssignedLabel();
-                if (label == null) { // project has no label -> so register
-                                     // "build:projectName" on all non exclusive nodes
-                    if (node.getMode() != Mode.EXCLUSIVE) {
-                        String jobFunctionName = "build:" + projectName;
-                        newFunctionMap.put(jobFunctionName, new CustomGearmanFunctionFactory(
-                            jobFunctionName, StartJobWorker.class.getName(),
-                            project, computer, this.masterName, worker));
-                    }
-                } else { // register "build:$projectName:$label" if this
-                         // node matches a node from the project label
+                String jobFunctionName = "build:" + projectName
+                        + ":" + "scheduler";
 
-                    Set<Node> projectLabelNodes = label.getNodes();
-                    Set<LabelAtom> projectLabelAtoms = label.listAtoms();
-                    LabelAtom scheduler = Jenkins.getActiveInstance().getLabelAtom("scheduler");
-                    Set<LabelAtom> nodeLabelAtoms = node.getAssignedLabels();
-                    if (scheduler != null && !nodeLabelAtoms.contains(scheduler)) {
-                        continue;
-                    }
-                    // Get the intersection of label atoms for the project and the current node
-                    Set<LabelAtom> nodeProjectLabelAtoms = new HashSet<LabelAtom>(projectLabelAtoms);
-                    nodeProjectLabelAtoms.retainAll(nodeLabelAtoms);
-
-                    // Register functions iff the current node is in
-                    // the list of nodes for the project's label
-                    if (projectLabelNodes.contains(node)) {
-                        String jobFunctionName = "build:" + projectName;
-                        // register without label (i.e. "build:$projectName")
-                        newFunctionMap.put(jobFunctionName, new CustomGearmanFunctionFactory(
-                                jobFunctionName, StartJobWorker.class.getName(),
-                                project, computer, this.masterName, worker));
-                        // iterate over the intersection of project and node labels
-                        for (LabelAtom labelAtom : nodeProjectLabelAtoms) {
-                            jobFunctionName = "build:" + projectName
-                                + ":" + labelAtom.getDisplayName();
-                            // register with label (i.e. "build:$projectName:$label")
-                            newFunctionMap.put(jobFunctionName, new CustomGearmanFunctionFactory(
-                                    jobFunctionName, StartJobWorker.class.getName(),
-                                    project, computer, this.masterName, worker));
-                        }
-                    }
-                }
+                newFunctionMap.put(jobFunctionName, new CustomGearmanFunctionFactory(
+                        jobFunctionName, StartJobWorker.class.getName(),
+                        project, computer, this.masterName, worker));
             }
         }
         if (!newFunctionMap.keySet().equals(functionMap.keySet())) {
