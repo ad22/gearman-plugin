@@ -123,8 +123,14 @@ public class ExecutorWorkerThread extends AbstractWorkerThread{
                 }
 
                 String projectName = project.getName();
-                String jobFunctionName = "build:" + projectName
+                String jobFunctionNameNode = "build:" + projectName
                         + ":" + "scheduler";
+
+                newFunctionMap.put(jobFunctionNameNode, new CustomGearmanFunctionFactory(
+                        jobFunctionNameNode, StartJobWorker.class.getName(),
+                        project, computer, this.masterName, worker));
+
+                String jobFunctionName = "build:" + projectName;
 
                 newFunctionMap.put(jobFunctionName, new CustomGearmanFunctionFactory(
                         jobFunctionName, StartJobWorker.class.getName(),
